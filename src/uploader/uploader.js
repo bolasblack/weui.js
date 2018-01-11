@@ -111,10 +111,15 @@ let _id = 0;
  *
  *        // return true; // 阻止默认行为，不显示预览图的图像
  *    },
- *    onBeforeSend: function(data, headers){
+ *    onBeforeSend: function(data, headers, done){
  *        console.log(this, data, headers);
  *        // $.extend(data, { test: 1 }); // 可以扩展此对象来控制上传参数
  *        // $.extend(headers, { Origin: 'http://127.0.0.1' }); // 可以扩展此对象来控制上传头部
+ *
+ *        // 可以做一些异步操作比如获取 token
+ *        setTimeout(function() {
+ *          done(null, false);
+ *        }, 100);
  *
  *        // return false; // 阻止文件上传
  *    },
@@ -229,10 +234,11 @@ function uploader(selector, options) {
     }
     if(options.onBeforeSend){
         const onBeforeSend = options.onBeforeSend;
-        options.onBeforeSend = function(file, data, headers){
-            const ret = onBeforeSend.call(file, data, headers);
-            if(ret === false){
-                return false;
+        options.onBeforeSend = function(file, data, headers, done){
+            if (onBeforeSend.length <= 2) {
+                done(onBeforeSend.call(file, data, headers));
+            } else {
+                onBeforeSend.call(file, data, headers, done);
             }
         };
     }
